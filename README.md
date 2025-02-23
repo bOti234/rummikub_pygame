@@ -1,5 +1,9 @@
 # Rummikub card game made with the pygame library in python!
 
+# DISCLAIMER
+
+This program is currently under development, so any bug or unfinished feature will be fixed in time! I also do not have any ownership for the game, nor the idea for the game called Rummikub, I just like playing it and wanted to see how long I need to develop a game like this in python.
+
 # Rummikub Rules
 
 Rummikub is a tile-based game for 2 to 4 players, combining elements of rummy and mahjong. The goal is to be the first to play all your tiles by forming valid sets (groups or runs) on the table.
