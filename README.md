@@ -7,14 +7,14 @@ Rummikub is a tile-based game for 2 to 4 players, combining elements of rummy an
 ---
 
 ## Components
-- 106 tiles: 104 numbered tiles (2 sets of tiles numbered 1 to 13 in four colors: black, red, blue, and yellow) and 2 joker tiles.
-- 4 tile racks (one for each player).
+- 106 tiles: 104 numbered tiles (2 sets of tiles numbered 1 to 13 in four colours: black, red, blue, and yellow) and 2 joker tiles.
+- 4 tile racks (one for each player). You can only see your tile rack, the rest is not visible to you.
 
 ---
 
 ## Setup
-1. Place all tiles face down on the table and shuffle them.
-2. Each player draws 14 tiles and places them on their rack, keeping them hidden from other players.
+1. All tiles are shuffled randomly in the deck.
+2. Each player draws 14 tiles and they are placed on their rack, keeping them hidden from other players.
 3. The remaining tiles form the draw pool.
 
 ---
@@ -32,8 +32,8 @@ Be the first to play all your tiles by forming valid sets (groups or runs) on th
 - If you cannot make an initial meld, you must draw a tile from the pool and end your turn.
 
 ### 2. Valid Sets
-- **Group (Set of the Same Number):** 3 or 4 tiles of the same number in different colors (e.g., red 7, blue 7, black 7).
-- **Run (Sequence):** 3 or more consecutive numbers in the same color (e.g., red 3, red 4, red 5).
+- **Group (Set of the Same Number):** 3 or 4 tiles of the same number in different colours (e.g., red 7, blue 7, black 7).
+- **Run (Sequence):** 3 or more consecutive numbers in the same colour (e.g., red 3, red 4, red 5). Since the smallest number is one (1) in every colour and the largest is thirteen (13), the players can "connect" the two ends of the row by placing a same-coloured thirteen and one in this order.
 
 ### 3. Using Jokers
 - A joker can represent any tile in a set.
