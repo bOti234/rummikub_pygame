@@ -16,6 +16,8 @@ class Row(sprite.Sprite):
 
         self.position: Vector2 = position
         self.valid: bool = self.validate_row(cards)
+        self.colours: List[str] = []
+        self.numbers: List[int] = []
         self.type: Union[int, None] = self.get_row_type(cards)
         self.cards: List[Card] = cards
         self.rect: Rect = self.calculate_rect(self.position.x, self.position.y)
@@ -81,9 +83,12 @@ class Row(sprite.Sprite):
             return False
         try:
             self.set_jokers(cards)
-        except RowError as e:
-            print(e)
-            return False
+        except Exception as e:
+            if isinstance(e, RowError):
+                print(e)
+                return False
+            raise e
+        self.set_type(cards)
         colours_list = [card.colour for card in cards if not card.is_hover_outline_card]
         numbers_list = [card.number for card in cards if not card.is_hover_outline_card]
         if len(set(colours_list)) > 4:
@@ -132,7 +137,11 @@ class Row(sprite.Sprite):
                 card.mimic(available_colours[0], not_jokers[0].number)
                 available_colours.pop(0)
                 
-                
+    def validate_if_added(self, card: Card, idx: int) -> bool:
+        self.add_card(card, idx)
+        valid = self.validate_row()
+        self.remove_card(card)
+        return valid
     
     def set_valid(self, valid: bool = False) -> None:
         self.valid = valid
@@ -148,14 +157,22 @@ class Row(sprite.Sprite):
     def calculate_rect(self, x: float, y: float) -> Rect:
         return Rect(x, y, sum(card.rect.width for card in self.cards) + (len(self.cards) - 1) * 10, max(card.rect.height for card in self.cards))
     
+    def set_colours_and_numbers(self, cards: List[Card]) -> None:
+        self.colours = [card.colour for card in cards]
+        self.numbers = [card.number for card in cards]
+
     def get_row_type(self, cards: List[Card]) -> Union[int, None]:
-        colours_list = [card.colour for card in cards]
-        numbers_list = [card.number for card in cards]
-        if len(set(colours_list)) == 1:     # number type
+        cards = cards if cards else self.cards
+        self.set_colours_and_numbers(cards)
+        if len(set(self.colours)) == 1:     # number type
             return Commons.ROWTYPES.NUMBER.value
-        elif len(set(numbers_list)) == 1:   # colour type
+        elif len(set(self.numbers)) == 1:   # colour type
             return Commons.ROWTYPES.COLOUR.value
         return None
+    
+    def set_type(self, cards: List[Card]) -> None:
+        cards = cards if cards else self.cards
+        self.type = self.get_row_type(cards)
     
     def set_moving(self, moving: bool) -> None:
         self.moving = moving

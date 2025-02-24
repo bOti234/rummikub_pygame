@@ -6,6 +6,7 @@ import pygame.locals
 from .board import Board
 from .button import Button
 from .card import Card
+from .cpu import CPU
 from .player import Player
 from .row import Row
 from.settings import Settings
@@ -14,7 +15,7 @@ import commons.enum as Commons
 class Game():
     singleton_instance = None
 
-    def __init__(self, players: List[Player], gamemode: str, screen_width: int, screen_height: int):
+    def __init__(self, players: List[Union[Player, CPU]], gamemode: str, screen_width: int, screen_height: int):
         self.settings: Settings = Settings(
 			fps = 60,
             gamemode = gamemode,
@@ -23,9 +24,10 @@ class Game():
 			game_size = 40
 			)
         
-        self.players: List[Player] = players
-        self.winners: List[Player] = []
-        self.current_player: Player = None
+        self.players: List[Union[Player, CPU]] = players
+        self.winners: List[Union[Player, CPU]] = []
+        self.previous_player_idx: int = None
+        self.current_player: Union[Player, CPU] = None
         self.this_round_played_cards: sprite.Group[Card] = None
         self.this_round_returned_cards: sprite.Group[Card] = None
         self.deck: sprite.Group[Card] = self.generate_deck()
@@ -58,11 +60,10 @@ class Game():
                 card1 = Card(colour, number, False, Commons.LOCATIONS.DECK.value)
                 card2 = Card(colour, number, False, Commons.LOCATIONS.DECK.value)
                 deck.add([card1, card2])
-        for _ in range(10):
-            deck.add([
-                Card("black", 0, True, Commons.LOCATIONS.DECK.value),     # "black" and 1 gets replaced by None
-                Card("black", 0, True, Commons.LOCATIONS.DECK.value),
-            ])
+        deck.add([
+            Card("white", 0, True, Commons.LOCATIONS.DECK.value),     # "black" and 1 gets replaced by None
+            Card("white", 0, True, Commons.LOCATIONS.DECK.value),
+        ])
         return deck
     
     def generate_buttons(self) -> sprite.Group:
@@ -96,7 +97,7 @@ class Game():
     def start(self):
         self.show_buttons(Commons.BUTTONTYPES.INGAME_BUTTONS.value)
         for player in self.players:
-            self.deck = player.game_start(self.deck)
+            self.deck = player.game_start(self.deck, 14)
             player.align_hand(self.settings.screen_height)
         self.current_player = random.choice(self.players)
         self.this_round_played_cards = sprite.Group()
@@ -104,7 +105,10 @@ class Game():
         self.start_turn()
         
     def next_turn(self) -> None:
-        player_id = self.players.index(self.current_player)
+        if self.current_player is None and self.previous_player_idx:
+            player_id = self.previous_player_idx - 2 if len(self.players) >= self.previous_player_idx - 1 else self.previous_player_idx - 1
+        else:
+            player_id = self.players.index(self.current_player)
         next_player_id = 0 if player_id + 1 >= len(self.players) else player_id + 1
         self.current_player = self.players[next_player_id]
         self.this_round_played_cards = sprite.Group()
@@ -120,9 +124,34 @@ class Game():
         else:
             self.turn_in_progress()
 
+    def end_turn(self) -> None:
+        if len(self.current_player.cards) == 0:
+            self.winners.append(self.current_player)
+            self.previous_player_idx = self.players.index(self.current_player)
+            self.players.remove(self.current_player)
+            self.current_player = None
+            if len(self.players) == 0:
+                return self.end_game()
+        elif len(self.this_round_played_cards) == 0 and len(self.this_round_returned_cards) == 0:
+            self.deck = self.current_player.draw_card(self.deck)
+        if self.current_player and not self.current_player.has_played_30:
+            self.current_player.has_played_30 = True
+        self.next_turn()
+
+    def end_game(self) -> None:
+        print("Winners are:\n")
+        for n in range(1, len(self.winners) + 1):
+            print(str(n)+". "+self.winners[n].name)
+        pygame.quit()
+
     def calculate_cpu_turn(self) -> None:
-        # Calculations here :)
-        self.end_turn()
+        if isinstance(self.current_player, CPU):
+            played_cards = self.current_player.simple_addition(self.board) if self.current_player.has_played_30 else self.current_player.find_30(self.board)
+            for triplet in played_cards:
+                row, card, idx = triplet
+                self.play_card(card)
+            self.board.move_rows_inside(self.settings.screen_width, self.settings.screen_height)
+            self.end_turn()
 
     def turn_in_progress(self) -> None:
         while True:
@@ -150,24 +179,6 @@ class Game():
             self.dt = self.clock.tick(self.settings.fps) / 1000 # self.dt is delta time in seconds since last frame
             self.time += self.dt
              # Call end_turn() at one point
-
-    def end_turn(self) -> None:
-        if len(self.current_player.cards) == 0:
-            self.winners.append(self.current_player)
-            self.players.remove(self.current_player)
-            if len(self.players) == 0:
-                return self.end_game()
-        elif len(self.this_round_played_cards) == 0 and len(self.this_round_returned_cards) == 0:
-            self.deck = self.current_player.draw_card(self.deck)
-        if not self.current_player.has_played_30:
-            self.current_player.has_played_30 = True
-        self.next_turn()
-
-    def end_game(self) -> None:
-        print("Winners are:\n")
-        for n in range(1, len(self.winners) + 1):
-            print(str(n)+". "+self.winners[n].name)
-        pygame.quit()
 
     def show_buttons(self, buttontypes: List[int]) -> None:
         for button in self.buttons:

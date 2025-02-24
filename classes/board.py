@@ -1,5 +1,6 @@
 from typing import List, Dict, Tuple, Union, Type
 from pygame import sprite, Rect, Vector2
+import random
 from .card import Card
 from .player import Player
 from .row import Row
@@ -78,3 +79,19 @@ class Board():
     def delete_row(self, row: Row) -> None:
         if row in self.rows:
             self.rows.remove(row)
+
+    def move_rows_inside(self, screen_width: int, screen_height: int) -> None:
+        for row in self.rows:
+            if row.rect.x > 50 and row.rect.y > 50 and row.rect.x + row.rect.width < screen_width - 50 and row.rect.y + row.rect.height < screen_height * 3 / 4 - 40:
+                continue
+            all_rects = [r.rect for r in self.rows]
+            done = False
+            for x in range(51, round(screen_width - 50 - row.rect.width), row.rect.width):  # O(n^2) :)))))))))))))))
+                for y in range(51, round(screen_height * 3 / 4 - 39 - row.rect.height), row.rect.height):
+                    if not Rect.collidelistall(Rect(x, y, row.rect.width, row.rect.height), all_rects):
+                        row.rect.x = x
+                        row.rect.y = y
+                        done = True
+                        break
+                if done:
+                    break

@@ -22,7 +22,7 @@ class Card(sprite.Sprite):
         self.is_joker: bool = is_joker
         if self.is_joker:
             self.valid: bool = True
-            self.colour: str = "black"
+            self.colour: str = "white"
             self.number: int = 0
         else:
             self.valid: bool = self.validate_card(colour, number)
@@ -81,7 +81,7 @@ class Card(sprite.Sprite):
     def unmask(self) -> None:
         if not self.is_joker:
             raise CardError.JokerError()
-        self.colour = "black"
+        self.colour = "white"
         self.number = 0
 
     def return_to_hand(self) -> None:

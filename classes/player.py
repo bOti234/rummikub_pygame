@@ -53,8 +53,8 @@ class Player():
             card.rect.x = 40 + n * (10 + card.rect.width)
             card.rect.y = screen_height * 3 / 4 + 10
 
-    def game_start(self, deck: sprite.Group) -> sprite.Group:
-        for _ in range(5):
+    def game_start(self, deck: sprite.Group, starting_cards_number: int = 14) -> sprite.Group:
+        for _ in range(starting_cards_number):
             card: Card = random.choice(deck.sprites())
             self.cards.add(card)
             card.get_drawn()
